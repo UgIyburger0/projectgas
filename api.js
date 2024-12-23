@@ -25,3 +25,12 @@ function fetchConversionRate() {
         }, 1000); // Simulate API latency
     });
 }
+
+module.exports = async (req, res) => {
+    try {
+        const rate = await fetchConversionRate();
+        res.status(200).json({ conversionRate: rate });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch conversion rate' });
+    }
+};
