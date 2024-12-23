@@ -94,6 +94,22 @@
             background: #003d80;
             transform: translateY(1px);
         }
+
+        .error {
+            color: red;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        .config {
+            color: #555;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            padding: 10px;
+            background: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -105,24 +121,44 @@
         </div>
         <button onclick="convertCurrency()">Convert</button>
         <div class="output" id="output"></div>
+        <div class="error" id="errorOutput"></div>
+        <div class="config" id="configOutput"></div>
     </div>
 
     <script src="api.js"></script>
     <script>
+        function fetchConversionRate() {
+            return fetch('/api.js')
+                .then(response => response.json())
+                .then(data => data)
+                .catch(err => {
+                    throw new Error('Failed to fetch conversion rate: ' + err.message);
+                });
+        }
+
         function convertCurrency() {
             const gasInput = document.getElementById('gas').value;
             const gasValue = parseFloat(gasInput);
 
+            document.getElementById('output').textContent = '';
+            document.getElementById('errorOutput').textContent = '';
+            document.getElementById('configOutput').textContent = '';
+
             if (!isNaN(gasValue) && gasValue >= 0) {
-                fetchConversionRate().then(rate => {
-                    const convertedValue = gasValue * rate;
-                    document.getElementById('output').textContent = `${gasValue} Ga$ = ${convertedValue.toFixed(2)} USD`;
+                fetchConversionRate().then(response => {
+                    if (response.conversionRate) {
+                        const convertedValue = gasValue * response.conversionRate;
+                        document.getElementById('output').textContent = `${gasValue} Ga$ = ${convertedValue.toFixed(2)} USD`;
+                    }
+                    if (response.config) {
+                        document.getElementById('configOutput').textContent = JSON.stringify(response.config, null, 2);
+                    }
                 }).catch(err => {
-                    document.getElementById('output').textContent = 'Error fetching conversion rate!';
+                    document.getElementById('errorOutput').textContent = 'Error fetching conversion rate!';
                     console.error(err);
                 });
             } else {
-                document.getElementById('output').textContent = 'Please enter a valid positive number!';
+                document.getElementById('errorOutput').textContent = 'Please enter a valid positive number!';
             }
         }
     </script>
