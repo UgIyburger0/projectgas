@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ga$</title>
+    <title>Ga$ Cryptocurrency Converter</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -107,14 +107,20 @@
         <div class="output" id="output"></div>
     </div>
 
+    <script src="api.js"></script>
     <script>
         function convertCurrency() {
             const gasInput = document.getElementById('gas').value;
             const gasValue = parseFloat(gasInput);
 
             if (!isNaN(gasValue) && gasValue >= 0) {
-                const convertedValue = gasValue * 25;
-                document.getElementById('output').textContent = `${gasValue} Ga$ = ${convertedValue} USD`;
+                fetchConversionRate().then(rate => {
+                    const convertedValue = gasValue * rate;
+                    document.getElementById('output').textContent = `${gasValue} Ga$ = ${convertedValue.toFixed(2)} USD`;
+                }).catch(err => {
+                    document.getElementById('output').textContent = 'Error fetching conversion rate!';
+                    console.error(err);
+                });
             } else {
                 document.getElementById('output').textContent = 'Please enter a valid positive number!';
             }
