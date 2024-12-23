@@ -1,19 +1,14 @@
-const fs = require('fs');
-
-// JSON configuration embedded as a string (could also be loaded from a file)
-const jsonConfig = `{
-    "sessionsBeforeRateUpdate": 15,
-    "rateBase": 95,
-    "rateVariance": 10,
-    "rateDecimals": 2,
-    "latency": 1000
-}`;
-
 let sessionCount = 0; // Track the session count
 let cachedRate = null; // Cache the rate to persist for a defined number of sessions
 
-// Parse the JSON configuration
-const CONFIG = JSON.parse(jsonConfig);
+// JSON configuration embedded as an object
+const CONFIG = {
+    sessionsBeforeRateUpdate: 15, // How many sessions before recalculating the rate
+    rateBase: 95, // The base rate
+    rateVariance: 10, // Variability in the rate
+    rateDecimals: 2, // Number of decimals for the rate
+    latency: 1000 // Simulated API latency in milliseconds
+};
 
 function fetchConversionRate() {
     return new Promise((resolve, reject) => {
@@ -34,7 +29,11 @@ function fetchConversionRate() {
 
                 resolve(parseFloat(cachedRate.toFixed(CONFIG.rateDecimals))); // Return the cached rate
             } catch (error) {
-                reject(new Error('Failed to generate conversion rate.'));
+                reject({
+                    error: 'Failed to generate conversion rate.',
+                    details: error.message,
+                    config: CONFIG
+                });
             }
         }, CONFIG.latency); // Simulate API latency
     });
@@ -43,8 +42,15 @@ function fetchConversionRate() {
 module.exports = async (req, res) => {
     try {
         const rate = await fetchConversionRate();
-        res.status(200).json({ conversionRate: rate });
+        res.status(200).json({
+            conversionRate: rate,
+            config: CONFIG
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            error: error.error,
+            details: error.details,
+            config: error.config // Include the config in case of an error to help with debugging
+        });
     }
 };
