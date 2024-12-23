@@ -113,7 +113,7 @@
             const gasValue = parseFloat(gasInput);
 
             if (!isNaN(gasValue) && gasValue >= 0) {
-                const convertedValue = gasValue * 100;
+                const convertedValue = gasValue * 25;
                 document.getElementById('output').textContent = `${gasValue} Ga$ = ${convertedValue} USD`;
             } else {
                 document.getElementById('output').textContent = 'Please enter a valid positive number!';
